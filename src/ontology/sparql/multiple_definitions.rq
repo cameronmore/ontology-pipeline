@@ -1,21 +1,13 @@
-# # Multiple Defintions
-#
-# **Problem:** An entity has more than one definition or elucidation. This may cause confusion or misuse, and will prevent translation to OBO format (in case of multiple definitions). Excludes deprecated entities.
-#
-# **OBO Foundry Principle:** [6 - Textual Definitions](http://obofoundry.org/principles/fp-006-textual-definitions.html)
-#
-# **Solution:** Remove extra definitions.
+# This SPARQL query ensures that terms do not have one or more definitions.
 
 PREFIX obo: <http://purl.obolibrary.org/obo/>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX cco: <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
-SELECT DISTINCT ?entity ?property ?value WHERE {
-  VALUES ?property { obo:IAO_0000115
-                     obo:IAO_0000600 }
-  ?entity ?property ?value .
-  ?entity ?property ?value2 .
-  FILTER (?value != ?value2)
-  FILTER NOT EXISTS { ?entity owl:deprecated true }
-  FILTER (!isBlank(?entity))
+SELECT ?term (COUNT(?definition) AS ?definitionCount)
+WHERE {
+  ?term cco:definition|skos:definition ?definition .
 }
-ORDER BY ?entity
+GROUP BY ?term
+HAVING (COUNT(?definition) > 1)
